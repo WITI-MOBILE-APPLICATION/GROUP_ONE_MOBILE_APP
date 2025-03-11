@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/movie_provider.dart';
-import '../models/genre.dart';
 import 'genre_movie_screen.dart';
 
 class GenreScreen extends StatefulWidget {
   const GenreScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _GenreScreenState createState() => _GenreScreenState();
 }
 
 class _GenreScreenState extends State<GenreScreen> {
+  final List<Map<String, dynamic>> categories = [
+    {'id': 1, 'name': 'Comedy', 'image': 'assets/comedy.png'},
+    {'id': 2, 'name': 'Hollywood', 'image': 'assets/hollywood.png'},
+    {'id': 3, 'name': 'Nollywood', 'image': 'assets/nollywood.png'},
+    {'id': 4, 'name': 'Bollywood', 'image': 'assets/bollywood.png'},
+    {'id': 5, 'name': 'Animations', 'image': 'assets/animations.png'},
+  ];
+
   @override
   void initState() {
     super.initState();
-    // Fetch genres when the screen initializes
     Provider.of<MovieProvider>(context, listen: false).fetchGenres();
   }
 
@@ -32,28 +37,35 @@ class _GenreScreenState extends State<GenreScreen> {
       body: movieProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: movieProvider.genres.length,
+              padding: const EdgeInsets.all(10),
+              itemCount: categories.length,
               itemBuilder: (context, index) {
-                final Genre genre = movieProvider.genres[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundImage: genre.image != null
-                        ? NetworkImage(genre.image!)
-                        : const AssetImage('assets/placeholder.png')
-                            as ImageProvider,
+                final category = categories[index];
+
+                return Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                  title: Text(genre.name),
-                  subtitle:
-                      Text(genre.description ?? "No description available"),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => GenreMoviesScreen(
-                            genreId: genre.id, genreName: genre.name),
-                      ),
-                    );
-                  },
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(15),
+                    leading: CircleAvatar(
+                      backgroundImage: AssetImage(category['image']),
+                      radius: 30,
+                    ),
+                    title: Text(category['name'],
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => GenreMoviesScreen(
+                              genreId: category['id'],
+                              genreName: category['name']),
+                        ),
+                      );
+                    },
+                  ),
                 );
               },
             ),

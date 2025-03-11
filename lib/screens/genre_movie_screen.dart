@@ -7,20 +7,27 @@ class GenreMoviesScreen extends StatefulWidget {
   final int genreId;
   final String genreName;
 
-  GenreMoviesScreen(
-      {super.key, required this.genreId, required this.genreName});
+  const GenreMoviesScreen({
+    super.key,
+    required this.genreId,
+    required this.genreName,
+  });
 
   @override
-  // ignore: library_private_types_in_public_api
   _GenreMoviesScreenState createState() => _GenreMoviesScreenState();
 }
 
 class _GenreMoviesScreenState extends State<GenreMoviesScreen> {
+  bool _isInit = true;
+
   @override
-  void initState() {
-    super.initState();
-    Provider.of<MovieProvider>(context, listen: false)
-        .fetchMoviesByGenre(widget.genreId);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_isInit) {
+      Provider.of<MovieProvider>(context, listen: false)
+          .fetchMoviesByGenre(widget.genreId);
+      _isInit = false;
+    }
   }
 
   @override
@@ -31,22 +38,38 @@ class _GenreMoviesScreenState extends State<GenreMoviesScreen> {
       appBar: AppBar(
         title: Text(widget.genreName),
         backgroundColor: Colors.blueAccent,
+        centerTitle: true,
       ),
       body: movieProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : GridView.builder(
-              padding: const EdgeInsets.all(10),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-                childAspectRatio: 0.7,
-              ),
-              itemCount: movieProvider.genreMovies.length,
-              itemBuilder: (context, index) {
-                return MovieCard(movie: movieProvider.genreMovies[index]);
-              },
-            ),
+          : movieProvider.genreMovies.isEmpty
+              ? Center(
+                  child: Text(
+                    'No movies found for "${widget.genreName}".',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, // 3 columns
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: 0.55, // Taller cards
+                    ),
+                    itemCount: movieProvider.genreMovies.length,
+                    itemBuilder: (context, index) {
+                      return MovieCard(
+                        movie: movieProvider.genreMovies[index],
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }

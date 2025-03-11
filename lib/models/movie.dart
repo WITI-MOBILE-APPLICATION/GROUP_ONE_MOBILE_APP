@@ -17,7 +17,6 @@ class Movie {
     required this.description,
   });
 
-  // ✅ Fix: Ensure it accepts `imageBaseUrl`
   factory Movie.fromJson(Map<String, dynamic> json, String imageBaseUrl) {
     return Movie(
       id: json['id'] ?? 0,
@@ -33,8 +32,6 @@ class Movie {
       description: json['overview'] ?? 'No Description Available',
     );
   }
-
-  get imageBaseUrl => null;
 }
 
 
