@@ -52,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                       image: const DecorationImage(
-                        image: NetworkImage('https://picsum.photos/200'),
+                        image: NetworkImage('https://picsum.photos/300/200?random=movie'),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -61,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 16),
                 const Center(
                   child: Text(
-                    'Antonio Renders',
+                    'Millia',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 const Center(
                   child: Text(
-                    '@rendersantonio',
+                    '@millia',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey,
