@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             icon: const Icon(Icons.category),
             onPressed: () {
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => GenreScreen()));
+                  MaterialPageRoute(builder: (context) => const GenreScreen()));
             },
           ),
           IconButton(
