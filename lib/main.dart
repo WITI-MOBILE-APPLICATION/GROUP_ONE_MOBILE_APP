@@ -6,11 +6,12 @@ import 'providers/movie_provider.dart';
 import 'screens/home_screen.dart';
 import './screens/movie_detail_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: "assets/.env");
-
+  
   runApp(MyApp());
 }
 
@@ -24,15 +25,14 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'MovieVault',
         theme: ThemeData.dark().copyWith(
-          primaryColor: Colors.blueAccent,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+          brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color.fromARGB(255, 24, 25, 26),
         ),
         debugShowCheckedModeBanner: false,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => SplashScreen(),
-          '/home': (context) => HomeScreen(),
-        },
+        // You can either use home directly:
+        home: const ProfileScreen(),
+        
+        
       ),
     );
   }
