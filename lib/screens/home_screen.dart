@@ -6,7 +6,7 @@ import '../providers/movie_provider.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/section_title.dart';
 import 'genre_screen.dart';
-
+import 'episode_screen.dart';
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 

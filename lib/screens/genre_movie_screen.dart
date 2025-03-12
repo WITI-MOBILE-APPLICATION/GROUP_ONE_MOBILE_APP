@@ -25,7 +25,10 @@ class _GenreMoviesScreenState extends State<GenreMoviesScreen> {
     super.didChangeDependencies();
     if (_isInit) {
       Provider.of<MovieProvider>(context, listen: false)
-          .fetchMoviesByGenre(widget.genreId);
+          .fetchMoviesByGenre(widget.genreId)
+          .then((_) {
+        setState(() {}); // Force UI update
+      });
       _isInit = false;
     }
   }
