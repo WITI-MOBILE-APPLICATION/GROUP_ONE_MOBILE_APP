@@ -6,7 +6,8 @@ class ApiService {
   static final String _baseUrl = 'https://api.themoviedb.org/3';
   static final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
 
-  Future<Map<String, dynamic>> get(String endpoint, {Map<String, String>? queryParams}) async {
+  Future<Map<String, dynamic>> get(String endpoint,
+      {Map<String, String>? queryParams}) async {
     final Uri url = Uri.parse('$_baseUrl$endpoint').replace(
       queryParameters: {'api_key': _apiKey, ...?queryParams},
     );

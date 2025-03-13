@@ -1,164 +1,435 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/models/movie.dart';
-import 'package:my_app/screens/movie_detail_screen.dart';
-import 'package:provider/provider.dart';
-import '../providers/movie_provider.dart';
-import '../widgets/movie_card.dart';
-import '../widgets/section_title.dart';
-import 'genre_screen.dart';
-import 'episode_screen.dart';
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'search_screen.dart';
 
+class HomeScreen extends StatefulWidget {
   @override
-  // ignore: library_private_types_in_public_api
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
+  final String apiKey = 'ab0608ff77e9b69c9583e1e673f95115';
+  final String trendingMoviesUrl =
+      'https://api.themoviedb.org/3/trending/movie/week';
+  final String imageBaseUrl = 'https://image.tmdb.org/t/p/w500/';
+
+  List<dynamic>? trendingMovies;
+  List<dynamic> lastWatched = [];
+
   @override
   void initState() {
     super.initState();
-    Provider.of<MovieProvider>(context, listen: false).fetchMovies();
+    fetchTrendingMovies();
+  }
+
+  Future<void> fetchTrendingMovies() async {
+    final response =
+        await http.get(Uri.parse('$trendingMoviesUrl?api_key=$apiKey'));
+
+    if (response.statusCode == 200) {
+      setState(() {
+        trendingMovies = json.decode(response.body)['results'];
+      });
+    } else {
+      throw Exception('Failed to load trending movies');
+    }
+  }
+
+  void _addToLastWatched(dynamic movie) {
+    setState(() {
+      if (!lastWatched
+          .any((watchedMovie) => watchedMovie['id'] == movie['id'])) {
+        lastWatched.add(movie);
+      }
+    });
+  }
+
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SearchScreen(apiKey: apiKey)),
+      );
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final movieProvider = Provider.of<MovieProvider>(context);
-
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: const Text('MovieVault',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.category),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => GenreScreen()));
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              showSearch(context: context, delegate: MovieSearchDelegate());
-            },
-          ),
+      backgroundColor: Color(0xFF06041F),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Color(0xFF06041F),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.download), label: 'Downloads'),
         ],
       ),
-      body: movieProvider.isLoading
+      body: trendingMovies == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTrendingMovies(movieProvider),
-                  const SectionTitle(title: 'Top Rated Movies'),
-                  _buildHorizontalMovieList(movieProvider.topRatedMovies),
-                  const SectionTitle(title: 'Upcoming Movies'),
-                  _buildHorizontalMovieList(movieProvider.upcomingMovies),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      height: 250,
+                      child: PageView.builder(
+                        itemCount: trendingMovies!.length > 5
+                            ? 5
+                            : trendingMovies!.length,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () =>
+                                _addToLastWatched(trendingMovies![index]),
+                            child: Container(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12.0),
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                      '$imageBaseUrl${trendingMovies![index]['poster_path']}'),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Last watched',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: lastWatched.map((movie) {
+                          return GestureDetector(
+                            onTap: () => _showMovieDetails(context, movie),
+                            child: Container(
+                              width: 140,
+                              margin: const EdgeInsets.only(right: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                    child: Image.network(
+                                      '$imageBaseUrl${movie['poster_path']}',
+                                      height: 100,
+                                      width: 140,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 5),
+                                  Text(
+                                    movie['title'] ?? 'Unknown',
+                                    style: const TextStyle(color: Colors.white),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text('Most Popular',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: trendingMovies!.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () => _showMovieDetails(
+                              context, trendingMovies![index]),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              '$imageBaseUrl${trendingMovies![index]['poster_path']}',
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
     );
   }
 
-  /// 🔥 **Trending Movies with Hero Animation**
-  Widget _buildTrendingMovies(MovieProvider movieProvider) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionTitle(title: 'Trending Now'),
-        SizedBox(
-          height: 250,
-          child: PageView.builder(
-            itemCount: movieProvider.trendingMovies.length,
-            controller: PageController(viewportFraction: 0.8),
-            itemBuilder: (context, index) {
-              final movie = movieProvider.trendingMovies[index];
-              return GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MovieDetailScreen(movie: movie),
-                    ),
-                  );
-                },
-                child: Hero(
-                  tag: 'movie_${movie.id}',
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      image: DecorationImage(
-                        image: NetworkImage(movie.poster),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
+  void _showMovieDetails(BuildContext context, dynamic movie) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.black,
+          title: Text(
+            movie['title'] ?? 'Unknown',
+            style: const TextStyle(color: Colors.white),
           ),
-        ),
-      ],
-    );
-  }
-
-  /// 🎬 **Reusable Movie List (Horizontal Scrolling)**
-  Widget _buildHorizontalMovieList(List<Movie> movies) {
-    return SizedBox(
-      height: 200,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: movies.length,
-        itemBuilder: (context, index) {
-          return MovieCard(movie: movies[index]);
-        },
-      ),
-    );
-  }
-}
-
-class MovieSearchDelegate extends SearchDelegate {
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
+          content: Text(
+            movie['overview'] ?? 'No description available.',
+            style: const TextStyle(color: Colors.white70),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
       },
     );
   }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return Center(child: Text('Search results for "$query"'));
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return const Center(child: Text('Search for movies'));
-  }
 }
 
-//  import 'package:flutter/material.dart';
+
+// import 'package:flutter/material.dart';
+// import 'package:http/http.dart' as http;
+// import 'dart:convert';
+// import 'package:shimmer/shimmer.dart';
+
+// class HomeScreen extends StatefulWidget {
+//   @override
+//   _HomeScreenState createState() => _HomeScreenState();
+// }
+
+// class _HomeScreenState extends State<HomeScreen> {
+//   final String apiKey = 'ab0608ff77e9b69c9583e1e673f95115';
+//   final String trendingMoviesUrl =
+//       'https://api.themoviedb.org/3/trending/movie/week';
+//   final String imageBaseUrl = 'https://image.tmdb.org/t/p/w500/';
+
+//   List<dynamic>? trendingMovies;
+//   List<dynamic> lastWatched = [];
+//   final List<String> categories = ['All', 'Actors', 'Comedy', 'Romance'];
+
+//   @override
+//   void initState() {
+//     super.initState();
+//     fetchTrendingMovies();
+//   }
+
+//   Future<void> fetchTrendingMovies() async {
+//     final response =
+//         await http.get(Uri.parse('$trendingMoviesUrl?api_key=$apiKey'));
+
+//     if (response.statusCode == 200) {
+//       setState(() {
+//         trendingMovies = json.decode(response.body)['results'];
+//       });
+//     } else {
+//       throw Exception('Failed to load trending movies');
+//     }
+//   }
+
+//   void _addToLastWatched(dynamic movie) {
+//     setState(() {
+//       if (!lastWatched
+//           .any((watchedMovie) => watchedMovie['id'] == movie['id'])) {
+//         lastWatched.add(movie);
+//       }
+//     });
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.black,
+//       bottomNavigationBar: BottomNavigationBar(
+//         backgroundColor: Colors.black,
+//         selectedItemColor: Colors.white,
+//         unselectedItemColor: Colors.grey,
+//         items: const [
+//           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+//           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+//           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+//           BottomNavigationBarItem(
+//               icon: Icon(Icons.download), label: 'Downloads'),
+//         ],
+//       ),
+//       body: trendingMovies == null
+//           ? buildShimmerEffect()
+//           : SingleChildScrollView(
+//               child: Padding(
+//                 padding: const EdgeInsets.all(16.0),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Categories
+//                     const Text('Categories',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 20,
+//                             fontWeight: FontWeight.bold)),
+//                     const SizedBox(height: 10),
+//                     SingleChildScrollView(
+//                       scrollDirection: Axis.horizontal,
+//                       child: Row(
+//                         children: categories.map((category) {
+//                           return GestureDetector(
+//                             onTap: () {
+//                               print('Clicked on $category');
+//                             },
+//                             child: Container(
+//                               margin: const EdgeInsets.only(right: 10),
+//                               padding: const EdgeInsets.symmetric(
+//                                   horizontal: 12, vertical: 8),
+//                               decoration: BoxDecoration(
+//                                 color: Colors.grey[800],
+//                                 borderRadius: BorderRadius.circular(20),
+//                               ),
+//                               child: Text(
+//                                 category,
+//                                 style: const TextStyle(color: Colors.white),
+//                               ),
+//                             ),
+//                           );
+//                         }).toList(),
+//                       ),
+//                     ),
+//                     const SizedBox(height: 20),
+//                     // Most popular
+//                     Row(
+//                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                       children: [
+//                         const Text('Most Popular',
+//                             style: TextStyle(
+//                                 color: Colors.white,
+//                                 fontSize: 20,
+//                                 fontWeight: FontWeight.bold)),
+//                         TextButton(
+//                           onPressed: () {
+//                             print('See All Most Popular');
+//                           },
+//                           child: const Text('See all',
+//                               style: TextStyle(color: Colors.red)),
+//                         )
+//                       ],
+//                     ),
+//                     const SizedBox(height: 10),
+//                     GridView.builder(
+//                       shrinkWrap: true,
+//                       physics: const NeverScrollableScrollPhysics(),
+//                       gridDelegate:
+//                           const SliverGridDelegateWithFixedCrossAxisCount(
+//                         crossAxisCount: 2,
+//                         crossAxisSpacing: 10,
+//                         mainAxisSpacing: 10,
+//                       ),
+//                       itemCount: trendingMovies!.length > 4
+//                           ? 4
+//                           : trendingMovies!.length,
+//                       itemBuilder: (context, index) {
+//                         return GestureDetector(
+//                           onTap: () => _showMovieDetails(
+//                               context, trendingMovies![index]),
+//                           child: ClipRRect(
+//                             borderRadius: BorderRadius.circular(8.0),
+//                             child: Image.network(
+//                               '$imageBaseUrl${trendingMovies![index]['poster_path']}',
+//                               fit: BoxFit.cover,
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                     ),
+//                   ],
+//                 ),
+//               ),
+//             ),
+//     );
+//   }
+
+//   Widget buildShimmerEffect() {
+//     return Padding(
+//       padding: const EdgeInsets.all(16.0),
+//       child: GridView.builder(
+//         shrinkWrap: true,
+//         physics: const NeverScrollableScrollPhysics(),
+//         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+//           crossAxisCount: 2,
+//           crossAxisSpacing: 10,
+//           mainAxisSpacing: 10,
+//         ),
+//         itemCount: 4,
+//         itemBuilder: (context, index) {
+//           return Shimmer.fromColors(
+//             baseColor: Colors.grey[800]!,
+//             highlightColor: Colors.grey[600]!,
+//             child: Container(
+//               decoration: BoxDecoration(
+//                 color: Colors.grey[800],
+//                 borderRadius: BorderRadius.circular(8.0),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+
+//   void _showMovieDetails(BuildContext context, dynamic movie) {
+//     showDialog(
+//       context: context,
+//       builder: (context) {
+//         return AlertDialog(
+//           backgroundColor: Colors.black,
+//           title: Text(
+//             movie['title'] ?? 'Unknown',
+//             style: const TextStyle(color: Colors.white),
+//           ),
+//           content: Text(
+//             movie['overview'] ?? 'No description available.',
+//             style: const TextStyle(color: Colors.white70),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () => Navigator.of(context).pop(),
+//               child: const Text('Close', style: TextStyle(color: Colors.red)),
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
+// }
+
+// import 'package:flutter/material.dart';
 // import 'package:http/http.dart' as http;
 // import 'dart:convert';
 
@@ -169,62 +440,253 @@ class MovieSearchDelegate extends SearchDelegate {
 
 // class _HomeScreenState extends State<HomeScreen> {
 //   final String apiKey = 'ab0608ff77e9b69c9583e1e673f95115';
-//   final String baseUrl = 'https://api.themoviedb.org/3/movie/latest';
-//   Map<String, dynamic>? latestMovie;
+//   final String trendingMoviesUrl =
+//       'https://api.themoviedb.org/3/trending/movie/week';
+//   final String latestMoviesUrl =
+//       'https://api.themoviedb.org/3/movie/now_playing';
+//   final String imageBaseUrl = 'https://image.tmdb.org/t/p/w500/';
+
+//   List<dynamic>? trendingMovies;
+//   List<dynamic>? latestMovies;
+//   List<dynamic> lastWatched = [];
 
 //   @override
 //   void initState() {
 //     super.initState();
-//     fetchLatestMovie();
+//     fetchTrendingMovies();
+//     fetchLatestMovies();
 //   }
 
-//   Future<void> fetchLatestMovie() async {
-//     final response = await http.get(Uri.parse('$baseUrl?api_key=$apiKey'));
-
+//   Future<void> fetchTrendingMovies() async {
+//     final response =
+//         await http.get(Uri.parse('$trendingMoviesUrl?api_key=$apiKey'));
 //     if (response.statusCode == 200) {
 //       setState(() {
-//         latestMovie = json.decode(response.body);
+//         trendingMovies = json.decode(response.body)['results'];
 //       });
 //     } else {
-//       throw Exception('Failed to load latest movie');
+//       throw Exception('Failed to load trending movies');
 //     }
+//   }
+
+//   Future<void> fetchLatestMovies() async {
+//     final response =
+//         await http.get(Uri.parse('$latestMoviesUrl?api_key=$apiKey'));
+//     if (response.statusCode == 200) {
+//       setState(() {
+//         latestMovies = json.decode(response.body)['results'];
+//       });
+//     } else {
+//       throw Exception('Failed to load latest movies');
+//     }
+//   }
+
+//   void _addToLastWatched(dynamic movie) {
+//     setState(() {
+//       if (!lastWatched
+//           .any((watchedMovie) => watchedMovie['id'] == movie['id'])) {
+//         lastWatched.add(movie);
+//       }
+//     });
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       appBar: AppBar(
-//         title: const Text('Latest Movie'),
+//       backgroundColor: Color(0xFF06041F),
+//       bottomNavigationBar: BottomNavigationBar(
+//         backgroundColor: Color(0xFF06041F),
+//         selectedItemColor: Colors.white,
+//         unselectedItemColor: Colors.grey,
+//         items: const [
+//           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+//           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+//           BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+//           BottomNavigationBarItem(
+//               icon: Icon(Icons.download), label: 'Downloads'),
+//         ],
 //       ),
-//       body: latestMovie == null
+//       body: trendingMovies == null || latestMovies == null
 //           ? const Center(child: CircularProgressIndicator())
-//           : Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     latestMovie!['title'] ?? 'No title available',
-//                     style: const TextStyle(
-//                       fontSize: 24,
-//                       fontWeight: FontWeight.bold,
+//           : SingleChildScrollView(
+//               child: Padding(
+//                 padding: const EdgeInsets.all(16.0),
+//                 child: Column(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     // Movie slider
+//                     const Text('Trending Movies',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 22,
+//                             fontWeight: FontWeight.bold)),
+//                     const SizedBox(height: 10),
+//                     Container(
+//                       height: 250,
+//                       child: PageView.builder(
+//                         itemCount: trendingMovies!.length > 5
+//                             ? 5
+//                             : trendingMovies!.length,
+//                         itemBuilder: (context, index) {
+//                           return GestureDetector(
+//                             onTap: () =>
+//                                 _addToLastWatched(trendingMovies![index]),
+//                             child: Container(
+//                               margin:
+//                                   const EdgeInsets.symmetric(horizontal: 8.0),
+//                               decoration: BoxDecoration(
+//                                 borderRadius: BorderRadius.circular(12.0),
+//                                 image: DecorationImage(
+//                                   image: NetworkImage(
+//                                       '$imageBaseUrl${trendingMovies![index]['poster_path']}'),
+//                                   fit: BoxFit.cover,
+//                                 ),
+//                               ),
+//                             ),
+//                           );
+//                         },
+//                       ),
 //                     ),
-//                   ),
-//                   const SizedBox(height: 10),
-//                   Text(
-//                     'Release Date: ${latestMovie!['release_date'] ?? 'Unknown'}',
-//                     style: const TextStyle(fontSize: 16),
-//                   ),
-//                   const SizedBox(
-//                     height: 10,
-//                   ),
-//                   Text(
-//                     latestMovie!['overview'] ?? 'No description available',
-//                     style: const TextStyle(fontSize: 16),
-//                   ),
-//                 ],
+//                     const SizedBox(height: 20),
+
+//                     // Last watched
+//                     const Text('Last Watched',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 20,
+//                             fontWeight: FontWeight.bold)),
+//                     const SizedBox(height: 10),
+//                     SingleChildScrollView(
+//                       scrollDirection: Axis.horizontal,
+//                       child: Row(
+//                         children: lastWatched.map((movie) {
+//                           return GestureDetector(
+//                             onTap: () => _showMovieDetails(context, movie),
+//                             child: Container(
+//                               width: 140,
+//                               margin: const EdgeInsets.only(right: 10),
+//                               child: Column(
+//                                 crossAxisAlignment: CrossAxisAlignment.start,
+//                                 children: [
+//                                   ClipRRect(
+//                                     borderRadius: BorderRadius.circular(8.0),
+//                                     child: Image.network(
+//                                       '$imageBaseUrl${movie['poster_path']}',
+//                                       height: 100,
+//                                       width: 140,
+//                                       fit: BoxFit.cover,
+//                                     ),
+//                                   ),
+//                                   const SizedBox(height: 5),
+//                                   Text(
+//                                     movie['title'] ?? 'Unknown',
+//                                     style: const TextStyle(color: Colors.white),
+//                                     overflow: TextOverflow.ellipsis,
+//                                   ),
+//                                 ],
+//                               ),
+//                             ),
+//                           );
+//                         }).toList(),
+//                       ),
+//                     ),
+//                     const SizedBox(height: 20),
+
+//                     // Most popular
+//                     const Text('Most Popular',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 20,
+//                             fontWeight: FontWeight.bold)),
+//                     const SizedBox(height: 10),
+//                     GridView.builder(
+//                       shrinkWrap: true,
+//                       physics: const NeverScrollableScrollPhysics(),
+//                       gridDelegate:
+//                           const SliverGridDelegateWithFixedCrossAxisCount(
+//                         crossAxisCount: 2,
+//                         crossAxisSpacing: 10,
+//                         mainAxisSpacing: 10,
+//                       ),
+//                       itemCount: trendingMovies!.length,
+//                       itemBuilder: (context, index) {
+//                         return GestureDetector(
+//                           onTap: () => _showMovieDetails(
+//                               context, trendingMovies![index]),
+//                           child: ClipRRect(
+//                             borderRadius: BorderRadius.circular(8.0),
+//                             child: Image.network(
+//                               '$imageBaseUrl${trendingMovies![index]['poster_path']}',
+//                               fit: BoxFit.cover,
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                     ),
+
+//                     const SizedBox(height: 20),
+
+//                     // Latest Movies
+//                     const Text('Latest Movies',
+//                         style: TextStyle(
+//                             color: Colors.white,
+//                             fontSize: 20,
+//                             fontWeight: FontWeight.bold)),
+//                     const SizedBox(height: 10),
+//                     GridView.builder(
+//                       shrinkWrap: true,
+//                       physics: const NeverScrollableScrollPhysics(),
+//                       gridDelegate:
+//                           const SliverGridDelegateWithFixedCrossAxisCount(
+//                         crossAxisCount: 2,
+//                         crossAxisSpacing: 10,
+//                         mainAxisSpacing: 10,
+//                       ),
+//                       itemCount: latestMovies!.length,
+//                       itemBuilder: (context, index) {
+//                         return GestureDetector(
+//                           onTap: () =>
+//                               _showMovieDetails(context, latestMovies![index]),
+//                           child: ClipRRect(
+//                             borderRadius: BorderRadius.circular(8.0),
+//                             child: Image.network(
+//                               '$imageBaseUrl${latestMovies![index]['poster_path']}',
+//                               fit: BoxFit.cover,
+//                             ),
+//                           ),
+//                         );
+//                       },
+//                     ),
+//                   ],
+//                 ),
 //               ),
 //             ),
 //     );
 //   }
+
+//   void _showMovieDetails(BuildContext context, dynamic movie) {
+//     showDialog(
+//       context: context,
+//       builder: (context) {
+//         return AlertDialog(
+//           backgroundColor: Colors.black,
+//           title: Text(
+//             movie['title'] ?? 'Unknown',
+//             style: const TextStyle(color: Colors.white),
+//           ),
+//           content: Text(
+//             movie['overview'] ?? 'No description available.',
+//             style: const TextStyle(color: Colors.white70),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () => Navigator.of(context).pop(),
+//               child: const Text('Close', style: TextStyle(color: Colors.red)),
+//             ),
+//           ],
+//         );
+//       },
+//     );
+//   }
 // }
+

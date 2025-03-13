@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'home_screen.dart';
+import 'signup_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,18 +12,20 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 3), () {
+    Timer(Duration(seconds: 5), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => SignUpScreen()),
       );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.blueAccent,
+    return Scaffold(
+      // backgroundColor: Colors.blueAccent,
+      backgroundColor: Colors.red,
+
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

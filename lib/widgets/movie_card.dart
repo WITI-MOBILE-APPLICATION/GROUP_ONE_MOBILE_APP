@@ -10,6 +10,10 @@ class MovieCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageUrl = movie.thumbnail.isNotEmpty
+        ? movie.thumbnail
+        : 'https://via.placeholder.com/500x300?text=No+Image';
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -20,13 +24,11 @@ class MovieCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Movie Thumbnail
             ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
               child: Image.network(
-                movie.thumbnail.isNotEmpty
-                    ? movie.thumbnail
-                    : 'https://via.placeholder.com/500x300?text=No+Image',
+                imageUrl,
                 height: 200,
                 width: double.infinity,
                 fit: BoxFit.cover,
@@ -34,11 +36,16 @@ class MovieCard extends StatelessWidget {
                   height: 200,
                   color: Colors.grey[300],
                   child: const Center(
-                      child: Icon(Icons.broken_image,
-                          size: 50, color: Colors.grey)),
+                    child: Icon(
+                      Icons.broken_image,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
+                  ),
                 ),
               ),
             ),
+            // Movie Title
             Padding(
               padding: const EdgeInsets.all(10),
               child: Text(
