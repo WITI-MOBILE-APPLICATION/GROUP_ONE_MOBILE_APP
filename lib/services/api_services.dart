@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiService {
-  static final String _baseUrl = 'https://api.themoviedb.org/3';
+  static const String _baseUrl = 'https://api.themoviedb.org/3';
   static final String _apiKey = dotenv.env['TMDB_API_KEY'] ?? '';
 
   Future<Map<String, dynamic>> get(String endpoint,
