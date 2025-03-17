@@ -7,7 +7,7 @@ class GenreMoviesScreen extends StatefulWidget {
   final int genreId;
   final String genreName;
 
-  GenreMoviesScreen(
+  const GenreMoviesScreen(
       {super.key, required this.genreId, required this.genreName});
 
   @override

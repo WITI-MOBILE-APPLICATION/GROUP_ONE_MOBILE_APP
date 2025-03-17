@@ -679,6 +679,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -751,9 +753,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF06041F),
+      backgroundColor: const Color(0xFF06041F),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Color(0xFF06041F),
+        backgroundColor: const Color(0xFF06041F),
         selectedItemColor: Colors.white,
         unselectedItemColor: Colors.grey,
         items: const [
@@ -773,7 +775,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Movie slider
-                    Container(
+                    SizedBox(
                       height: 250,
                       child: PageView.builder(
                         itemCount: trendingMovies!.length > 5

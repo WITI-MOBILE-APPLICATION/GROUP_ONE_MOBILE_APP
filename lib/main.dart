@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/screens/forgot_password.dart';
+import 'package:my_app/screens/onboarding1.dart';
 import 'package:my_app/screens/signup_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,6 +20,8 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -33,7 +36,7 @@ class MyApp extends StatelessWidget {
         //   visualDensity: VisualDensity.adaptivePlatformDensity,
         // ),
         theme: ThemeData.dark().copyWith(
-          primaryColor: Color(0xFF06041F), // Custom Black Pearl color
+          primaryColor: const Color(0xFF06041F), // Custom Black Pearl color
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
 
@@ -41,6 +44,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/', // Start with the splash screen
         routes: {
           '/': (context) => SplashScreen(),
+          '/': (context) => OnboardingScreen(),
           // Login screen route
           '/signup': (context) => SignUpScreen(),
           '/login': (context) => LoginScreen(),
