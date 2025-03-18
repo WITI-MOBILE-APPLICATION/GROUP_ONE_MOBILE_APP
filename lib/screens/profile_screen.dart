@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+  
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -92,7 +93,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: const BoxDecoration(
-              color: Color(0xFF151630),
+              color: Color.fromARGB(255, 38, 41, 62),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
@@ -130,9 +131,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             width: 30,
             height: 30,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
              shape: BoxShape.circle,
-color: const Color.fromARGB(255, 80, 81, 93),
+color: Color.fromARGB(255, 80, 81, 93),
             ),
             child: Icon(icon, color: const Color.fromARGB(255, 144, 143, 143), size: 20),
           ),
