@@ -159,7 +159,7 @@ class OnboardingPage extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 24.0),
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 223, 32, 7),
+                            backgroundColor: const Color.fromARGB(255, 223, 75, 7),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
