@@ -1,8 +1,14 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/login_screen.dart';
+import 'package:group_one_mobile_app/screens/login_screen.dart';
+// ignore: depend_on_referenced_packages
+
 
 class SignUpScreen extends StatefulWidget {
+  const SignUpScreen({super.key});
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }

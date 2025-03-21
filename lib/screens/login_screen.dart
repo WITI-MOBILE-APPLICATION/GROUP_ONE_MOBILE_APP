@@ -123,7 +123,8 @@
 // }
 
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/home_screen.dart';
+// ignore: depend_on_referenced_packages
+import 'package:group_one_mobile_app/screens/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
