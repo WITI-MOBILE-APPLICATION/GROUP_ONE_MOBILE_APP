@@ -6,6 +6,8 @@ import 'movie_detail_screen.dart';
 import 'search_screen.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -157,30 +159,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF06041F),
-      bottomNavigationBar: Container(
-        color: Color(0xFF06041F),
-        child: BottomNavigationBar(
-          backgroundColor: Color(0xFF06041F),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          currentIndex: _selectedIndex, // Reflect the selected index
-          onTap: _onItemTapped, // Link the tap handler
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-            BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.download), label: 'Downloads'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-          ],
-        ),
+      backgroundColor: const Color(0xFF06041F),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color(0xFF06041F),
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.download), label: 'Downloads'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
-      body: trendingMovies == null ||
-              popularMovies == null ||
-              latestMovies == null
+      body: trendingMovies == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding:

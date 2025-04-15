@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF06041F),
+      backgroundColor: const Color(0xFF06041F),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(
                   labelText: 'Email Address', border: UnderlineInputBorder()),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             const TextField(
               obscureText: true,
               decoration: InputDecoration(
@@ -171,10 +171,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/forgot');
                 },
-                child: Text("Forgot Password?"),
+                child: const Text("Forgot Password?"),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 // On login, navigate to the next screen (e.g., home or dashboard)
@@ -185,11 +185,11 @@ class _LoginScreenState extends State<LoginScreen> {
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: StadiumBorder()),
-              child: Text('Login'),
+                  minimumSize: const Size(double.infinity, 50),
+                  shape: const StadiumBorder()),
+              child: const Text('Login'),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             const Row(children: <Widget>[
               Expanded(child: Divider(color: Colors.grey)),
               Padding(
@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               Expanded(child: Divider(color: Colors.grey)),
             ]),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -206,7 +206,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 SocialButton(label: 'Facebook', icon: Icons.facebook),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             TextButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/signup');
@@ -238,11 +238,11 @@ class SocialButton extends StatelessWidget {
       onPressed: () {},
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.grey[800],
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: StadiumBorder(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: const StadiumBorder(),
       ),
       icon: Icon(icon, color: Colors.white),
-      label: Text(label, style: TextStyle(color: Colors.white)),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
     );
   }
 }

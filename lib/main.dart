@@ -75,6 +75,8 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -89,7 +91,7 @@ class MyApp extends StatelessWidget {
         //   visualDensity: VisualDensity.adaptivePlatformDensity,
         // ),
         theme: ThemeData.dark().copyWith(
-          primaryColor: Color(0xFF06041F), // Custom Black Pearl color
+          primaryColor: const Color(0xFF06041F), // Custom Black Pearl color
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
 
