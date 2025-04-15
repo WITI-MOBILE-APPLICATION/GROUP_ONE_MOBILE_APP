@@ -50,6 +50,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   provider: ^6.1.2 #for state management
   flutter_dotenv: ^5.2.1
+  video_player: ^2.9.3
 
 dev_dependencies:
   flutter_test:
@@ -78,6 +79,7 @@ flutter:
     - assets/images/movie2.jpg
     - assets/images/movie1.jpg
     - assets/.env
+    - assets/images/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

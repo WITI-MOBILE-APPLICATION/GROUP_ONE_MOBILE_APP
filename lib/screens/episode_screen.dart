@@ -1,11 +1,45 @@
+import 'dart:convert'; // For json.decode
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http; // For making HTTP requests
+import 'movie_player.dart'; // Make sure this is the correct import path for MoviePlayerScreen
 
 void main() {
-  runApp(const EpisodeScreen());
+  runApp(EpisodeScreen());
 }
 
-class EpisodeScreen extends StatelessWidget {
-  const EpisodeScreen({super.key});
+class EpisodeScreen extends StatefulWidget {
+  @override
+  _EpisodeScreenState createState() => _EpisodeScreenState();
+}
+
+class _EpisodeScreenState extends State<EpisodeScreen> {
+  List<dynamic> episodes = [];
+  bool isLoading = true;
+  String tvId = "123"; // Replace with the actual TV ID you need
+  String apiKey =
+      "ab0608ff77e9b69c9583e1e673f95115"; // Replace with your actual API key
+
+  @override
+  void initState() {
+    super.initState();
+    fetchEpisodes();
+  }
+
+  Future<void> fetchEpisodes() async {
+    final response = await http.get(
+      Uri.parse(
+          'https://api.themoviedb.org/3/tv/$tvId/season/1?api_key=$apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      setState(() {
+        episodes = json.decode(response.body)['episodes'];
+        isLoading = false;
+      });
+    } else {
+      throw Exception('Failed to load episodes');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +53,7 @@ class EpisodeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 50),
+              SizedBox(height: 50),
               const Center(
                 child: Icon(
                   Icons.image_not_supported_outlined,
@@ -32,7 +66,9 @@ class EpisodeScreen extends StatelessWidget {
                 child: Text(
                   "Disney’s Aladdin",
                   style: TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
               const Center(
@@ -54,11 +90,13 @@ class EpisodeScreen extends StatelessWidget {
                       ),
                     ),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Text("Play", style: TextStyle(color: Colors.white)),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                      child:
+                          Text("Play", style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  const SizedBox(width: 20),
+                  SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -67,23 +105,27 @@ class EpisodeScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Text("Download", style: TextStyle(color: Colors.white)),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      child: Text("Download",
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              const Text(
+              SizedBox(height: 20),
+              Text(
                 "Aladdin, a street boy who falls in love with a princess. With differences in caste and wealth, Ala... Read more",
                 style: TextStyle(color: Colors.white60),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text("Episode", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  Text("Episode",
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold)),
                   SizedBox(width: 20),
                   Text("Similar", style: TextStyle(color: Colors.white60)),
                   SizedBox(width: 20),
@@ -98,41 +140,33 @@ class EpisodeScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Expanded(
-                child: ListView(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white12,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: const Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: Colors.red,
-                            child: Icon(Icons.play_arrow, color: Colors.white),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Trailer", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 5),
-                                Text(
-                                  "Aladdin, a street boy who falls in love with a princess. With differences in caste and wealth, Aladdin tries to...",
-                                  style: TextStyle(color: Colors.white60),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                child: isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : ListView.builder(
+                        itemCount: episodes.length,
+                        itemBuilder: (context, index) {
+                          final episode = episodes[index];
+                          return ListTile(
+                            title: Text(episode['name'] ?? 'Episode'),
+                            subtitle:
+                                Text(episode['overview'] ?? 'No description'),
+                            onTap: () {
+                              // Handle episode playback
+                              String episodeUrl =
+                                  'https://your_video_source.com/${episode['id']}.mp4'; // Replace with actual video URL
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MoviePlayerScreen(
+                                    movieTitle: episode['name'] ?? 'Episode',
+                                    videoUrl: episodeUrl,
+                                  ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
+                              );
+                            },
+                          );
+                        },
                       ),
-                    ),
-                  ],
-                ),
               ),
             ],
           ),
