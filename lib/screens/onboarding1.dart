@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/login_screen.dart'; // Ensure this file exists
+import 'login_screen.dart'; // Ensure this file exists
 import 'dart:async'; // Import for Timer
 
 class OnboardingScreen extends StatefulWidget {
