@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/signup_screen.dart'; // Import your signup screen file
+import 'package:my_app/screens/home_screen.dart'; // Import your home screen file (adjust path/name as needed)
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -50,10 +50,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 description: onboardingData[index]['description']!,
                 showButton: index == onboardingData.length - 1, // Show only on last page
                 onButtonPressed: () {
-                  // Navigator.pushReplacement(
-                  //   context,
-                  //   MaterialPageRoute(builder: (context) => SignupScreen()), // Navigate to signup
-                  // );
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const HomeScreen()), // Navigate to home screen
+                  );
                 },
               );
             },
