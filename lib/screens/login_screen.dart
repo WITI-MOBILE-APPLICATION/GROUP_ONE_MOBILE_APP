@@ -122,13 +122,15 @@
 //   }
 // }
 
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:my_app/screens/home_screen.dart';
-import 'package:my_app/screens/home_screen.dart';
+// ignore: depend_on_referenced_packages
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -191,7 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const Row(children: <Widget>[
               Expanded(child: Divider(color: Colors.grey)),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: EdgeInsets.symmetric(horizontal: 8.0),
                 child: Text("or"),
               ),
               Expanded(child: Divider(color: Colors.grey)),
@@ -228,8 +230,7 @@ class SocialButton extends StatelessWidget {
   final String label;
   final IconData icon;
 
-  const SocialButton({required this.label, required this.icon, Key? key})
-      : super(key: key);
+  const SocialButton({required this.label, required this.icon, super.key});
 
   @override
   Widget build(BuildContext context) {
