@@ -10,6 +10,7 @@ import 'screens/login_screen.dart';
 import 'screens/signup_screen.dart';
 import 'providers/movie_provider.dart';
 import 'screens/forgot_password.dart';
+import 'screens/onboarding1.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +39,12 @@ class MyApp extends StatelessWidget {
         ),
 
         debugShowCheckedModeBanner: false,
+
         initialRoute: '/', // Start with the splash screen
         routes: {
           '/': (context) => SplashScreen(),
+          '/onboarding': (context) => OnboardingScreen(),
+
           // Login screen route
           '/signup': (context) => SignUpScreen(),
           '/login': (context) => LoginScreen(),
