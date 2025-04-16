@@ -112,7 +112,8 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _navigateToDetails(BuildContext context, dynamic item) {
-    String videoUrl = "https://your_video_source.com/${item['id']}.mp4"; // Replace with actual streaming source
+    String videoUrl =
+        "https://your_video_source.com/${item['id']}.mp4"; // Replace with actual streaming source
 
     Navigator.push(
       context,
@@ -132,7 +133,9 @@ class MoviePlayerScreen extends StatelessWidget {
   final String movieTitle;
   final String videoUrl;
 
-  const MoviePlayerScreen({Key? key, required this.movieTitle, required this.videoUrl}) : super(key: key);
+  const MoviePlayerScreen(
+      {Key? key, required this.movieTitle, required this.videoUrl})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +153,8 @@ class EpisodeListScreen extends StatefulWidget {
   final String apiKey;
   final int tvId;
 
-  const EpisodeListScreen({Key? key, required this.apiKey, required this.tvId}) : super(key: key);
+  const EpisodeListScreen({Key? key, required this.apiKey, required this.tvId})
+      : super(key: key);
 
   @override
   _EpisodeListScreenState createState() => _EpisodeListScreenState();
@@ -168,7 +172,8 @@ class _EpisodeListScreenState extends State<EpisodeListScreen> {
 
   Future<void> fetchEpisodes() async {
     final response = await http.get(
-      Uri.parse('https://api.themoviedb.org/3/tv/${widget.tvId}/season/1?api_key=${widget.apiKey}'),
+      Uri.parse(
+          'https://api.themoviedb.org/3/tv/${widget.tvId}/season/1?api_key=${widget.apiKey}'),
     );
 
     if (response.statusCode == 200) {

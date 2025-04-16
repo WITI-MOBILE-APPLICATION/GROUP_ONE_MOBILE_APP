@@ -1,7 +1,7 @@
 import 'dart:convert'; // For json.decode
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http; // For making HTTP requests
-import 'movie_player_screen.dart'; // Make sure this is the correct import path for MoviePlayerScreen
+import 'movie_player.dart'; // Make sure this is the correct import path for MoviePlayerScreen
 
 void main() {
   runApp(EpisodeScreen());
@@ -16,7 +16,8 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
   List<dynamic> episodes = [];
   bool isLoading = true;
   String tvId = "123"; // Replace with the actual TV ID you need
-  String apiKey = "ab0608ff77e9b69c9583e1e673f95115"; // Replace with your actual API key
+  String apiKey =
+      "ab0608ff77e9b69c9583e1e673f95115"; // Replace with your actual API key
 
   @override
   void initState() {
@@ -26,7 +27,8 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
 
   Future<void> fetchEpisodes() async {
     final response = await http.get(
-      Uri.parse('https://api.themoviedb.org/3/tv/$tvId/season/1?api_key=$apiKey'),
+      Uri.parse(
+          'https://api.themoviedb.org/3/tv/$tvId/season/1?api_key=$apiKey'),
     );
 
     if (response.statusCode == 200) {
@@ -51,7 +53,7 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 50),
+              const SizedBox(height: 50),
               const Center(
                 child: Icon(
                   Icons.image_not_supported_outlined,
@@ -64,7 +66,9 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
                 child: Text(
                   "Disney’s Aladdin",
                   style: TextStyle(
-                      fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
               const Center(
@@ -86,11 +90,13 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
                       ),
                     ),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Text("Play", style: TextStyle(color: Colors.white)),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                      child:
+                          Text("Play", style: TextStyle(color: Colors.white)),
                     ),
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
@@ -99,23 +105,27 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                      child: Text("Download", style: TextStyle(color: Colors.white)),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      child: Text("Download",
+                          style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
-              Text(
+              const SizedBox(height: 20),
+              const Text(
                 "Aladdin, a street boy who falls in love with a princess. With differences in caste and wealth, Ala... Read more",
                 style: TextStyle(color: Colors.white60),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               const Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  Text("Episode", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                  Text("Episode",
+                      style: TextStyle(
+                          color: Colors.red, fontWeight: FontWeight.bold)),
                   SizedBox(width: 20),
                   Text("Similar", style: TextStyle(color: Colors.white60)),
                   SizedBox(width: 20),
@@ -131,17 +141,19 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
               const SizedBox(height: 20),
               Expanded(
                 child: isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator())
                     : ListView.builder(
                         itemCount: episodes.length,
                         itemBuilder: (context, index) {
                           final episode = episodes[index];
                           return ListTile(
                             title: Text(episode['name'] ?? 'Episode'),
-                            subtitle: Text(episode['overview'] ?? 'No description'),
+                            subtitle:
+                                Text(episode['overview'] ?? 'No description'),
                             onTap: () {
                               // Handle episode playback
-                              String episodeUrl = 'https://your_video_source.com/${episode['id']}.mp4'; // Replace with actual video URL
+                              String episodeUrl =
+                                  'https://your_video_source.com/${episode['id']}.mp4'; // Replace with actual video URL
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
