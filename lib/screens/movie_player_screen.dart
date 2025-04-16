@@ -7,7 +7,11 @@ class MoviePlayerScreen extends StatefulWidget {
   final String movieTitle;
   final String videoUrl;
 
-  const MoviePlayerScreen({Key? key, required this.movieTitle, required this.videoUrl}) : super(key: key);
+  const MoviePlayerScreen({
+    Key? key,
+    required this.movieTitle,
+    required this.videoUrl,
+  }) : super(key: key);
 
   @override
   _MoviePlayerScreenState createState() => _MoviePlayerScreenState();
@@ -22,22 +26,22 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
   void initState() {
     super.initState();
 
-    // Validate the video URL first
+    // Check if the videoUrl is valid
     if (widget.videoUrl.isEmpty || !widget.videoUrl.startsWith('http')) {
       setState(() {
-        errorMessage = 'Invalid video URL';
+        errorMessage = 'Invalid video URL: ${widget.videoUrl}';
         isLoading = false;
       });
       return;
     }
 
-    // Initialize the video player controller
+    // Initialize the VideoPlayerController
     _controller = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
         setState(() {
           isLoading = false;
         });
-        _controller.play(); // Start playing automatically after initialization
+        _controller.play(); // Auto-play the video
       }).catchError((error) {
         setState(() {
           errorMessage = 'Error loading video: $error';
@@ -48,8 +52,8 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
 
   @override
   void dispose() {
+    _controller.dispose(); // Always dispose the controller to free resources
     super.dispose();
-    _controller.dispose(); // Properly dispose of the controller
   }
 
   @override
@@ -62,27 +66,46 @@ class _MoviePlayerScreenState extends State<MoviePlayerScreen> {
       ),
       body: Center(
         child: isLoading
-            ? const CircularProgressIndicator() // Show loading spinner while video is buffering
+            ? const CircularProgressIndicator(
+                color: Colors.red,
+              )
             : errorMessage.isNotEmpty
-                ? Text(errorMessage, style: TextStyle(color: Colors.red)) // Show error message
-                : AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
+                ? Text(
+                    errorMessage,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  )
+                : GestureDetector(
+                    onTap: () {
+                      // Toggle play/pause on tap
+                      setState(() {
+                        _controller.value.isPlaying
+                            ? _controller.pause()
+                            : _controller.play();
+                      });
+                    },
+                    child: AspectRatio(
+                      aspectRatio: _controller.value.aspectRatio,
+                      child: VideoPlayer(_controller),
+                    ),
                   ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.red,
-        onPressed: () {
-          setState(() {
-            if (_controller.value.isPlaying) {
-              _controller.pause();
-            } else {
-              _controller.play();
-            }
-          });
-        },
-        child: Icon(
-          _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+      floatingActionButton: Visibility(
+        // Only show the button if there's no error
+        visible: errorMessage.isEmpty,
+        child: FloatingActionButton(
+          backgroundColor: Colors.red,
+          onPressed: () {
+            // Toggle play/pause on button press
+            setState(() {
+              _controller.value.isPlaying
+                  ? _controller.pause()
+                  : _controller.play();
+            });
+          },
+          child: Icon(
+            _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
+          ),
         ),
       ),
     );
