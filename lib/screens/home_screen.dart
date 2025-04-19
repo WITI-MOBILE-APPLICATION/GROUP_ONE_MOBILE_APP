@@ -170,11 +170,13 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: _onItemTapped, // Link the tap handler
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            
             BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
             BottomNavigationBarItem(icon: Icon(Icons.bookmark), label: 'Saved'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.download), label: 'Downloads'),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+           
           ],
         ),
       ),

@@ -15,14 +15,11 @@ dependencies:
   universal_html: ^2.2.4
   carousel_slider: ^4.2.1
   shimmer: ^3.0.0
-  http: ^0.13.6
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-  provider: ^6.1.2 #for state management
-  flutter_dotenv: ^5.2.1
-  video_player: ^2.9.3
+  http: ^1.1.0
+  provider: ^6.1.2  # For state management (SettingsProvider)
+  flutter_dotenv: ^5.2.1  # For loading environment variables in main.dart
+  cupertino_icons: ^1.0.8  # For iOS style icons
+  video_player: ^2.9.3  # For playing videos (e.g., movie trailers)
 
 dev_dependencies:
   flutter_test:
@@ -34,6 +31,7 @@ flutter:
   assets:
     - assets/.env
     - assets/images/
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
