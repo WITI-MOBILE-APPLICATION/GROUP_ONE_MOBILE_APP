@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-  
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
@@ -13,29 +11,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedIndex = 4; // Default to 'Me' tab
 
   void _navigateToPage(BuildContext context, String pageTitle) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: Text(pageTitle)),
-          body: Center(
-            child: Text(
-              '$pageTitle Page',
-              style: const TextStyle(fontSize: 20, color: Color.fromARGB(255, 41, 41, 41)),
+    if (pageTitle == 'Help') {
+      Navigator.pushNamed(context, '/help');
+    } else if (pageTitle == 'Setting') {
+      Navigator.pushNamed(context, '/settings');
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: Text(pageTitle)),
+            body: Center(
+              child: Text(
+                '$pageTitle Page',
+                style: const TextStyle(fontSize: 20, color: Color.fromARGB(255, 41, 41, 41)),
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF1a1a2e),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text('Save', style: TextStyle(color: Colors.white)),
+        title: const Text('', style: TextStyle(color: Colors.white)),
         centerTitle: true,
         leading: Container(),
       ),
@@ -45,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: ListView(
               children: [
                 const SizedBox(height: 20),
+                // Profile Image
                 Center(
                   child: Container(
                     width: 80,
@@ -60,6 +66,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+                // User Name
                 const Center(
                   child: Text(
                     'Millia',
@@ -70,6 +77,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                 ),
+                // User Handle
                 const Center(
                   child: Text(
                     '@millia',
@@ -80,16 +88,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 30),
+                // Menu Items
                 _buildMenuItem(Icons.person_outline, 'My Profile', true),
                 _buildMenuItem(Icons.notifications_outlined, 'Notification', false),
                 _buildMenuItem(Icons.history, 'History', false),
                 _buildMenuItem(Icons.card_membership_outlined, 'My Subscription', false),
                 _buildMenuItem(Icons.settings_outlined, 'Setting', false),
                 _buildMenuItem(Icons.help_outline, 'Help', false),
-                _buildMenuItem(Icons.logout, 'Logout', false),
               ],
             ),
           ),
+          // Bottom Navigation Bar
           Container(
             padding: const EdgeInsets.symmetric(vertical: 14),
             decoration: const BoxDecoration(
@@ -117,35 +126,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Modified _buildMenuItem to conditionally display box
   Widget _buildMenuItem(IconData icon, String title, bool isBoxed) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      padding: isBoxed ? const EdgeInsets.all(16) : EdgeInsets.zero,
-      decoration: isBoxed
-          ? BoxDecoration(
-              color: const Color.fromARGB(255, 38, 41, 62),
-              borderRadius: BorderRadius.circular(15),
-            )
-          : null,
-      child: Row(
-        children: [
-          Container(
-            width: 30,
-            height: 30,
-            decoration: const BoxDecoration(
-             shape: BoxShape.circle,
-color: Color.fromARGB(255, 80, 81, 93),
+    return GestureDetector(
+      onTap: () => _navigateToPage(context, title),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isBoxed ? const Color.fromARGB(255, 38, 41, 62) : const Color(0xFF2a2a3e),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: const Color.fromARGB(255, 133, 133, 133).withOpacity(0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 30,
+              height: 30,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Color.fromARGB(255, 72, 73, 81),
+              ),
+              child: Icon(icon, color: const Color.fromARGB(255, 144, 143, 143), size: 20),
             ),
-            child: Icon(icon, color: const Color.fromARGB(255, 144, 143, 143), size: 20),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 16,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -156,6 +167,10 @@ color: Color.fromARGB(255, 80, 81, 93),
         setState(() {
           _selectedIndex = index; // Update selected index
         });
+        if (label == 'Me') {
+          // Already on ProfileScreen, no navigation needed
+          return;
+        }
         _navigateToPage(context, label);
       },
       child: Column(
@@ -163,14 +178,14 @@ color: Color.fromARGB(255, 80, 81, 93),
         children: [
           Icon(
             icon,
-            color: _selectedIndex == index ? const Color.fromARGB(255, 254, 253, 253).withOpacity(0.7) : Colors.grey, // Transparent black for active state
+            color: _selectedIndex == index ? const Color.fromARGB(255, 254, 253, 253).withOpacity(0.7) : Colors.grey,
             size: 24,
           ),
           const SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: _selectedIndex == index ? const Color.fromARGB(255, 252, 250, 250).withOpacity(0.7) : Colors.grey, // Transparent black for active state
+              color: _selectedIndex == index ? const Color.fromARGB(255, 252, 250, 250).withOpacity(0.7) : Colors.grey,
               fontSize: 12,
             ),
           ),
