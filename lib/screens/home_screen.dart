@@ -444,58 +444,76 @@ class SubscribePopup extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
       ),
       backgroundColor: Color(0xFF2A2E43),
-      child: Padding(
-        padding: EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.star,
-              color: Colors.yellow,
-              size: 40,
+      child: Stack(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.star,
+                  color: Colors.yellow,
+                  size: 40,
+                ),
+                SizedBox(height: 10),
+                Text(
+                  'Be a premium user and get more features',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                _buildFeatureItem('Ad-free'),
+                _buildFeatureItem('Get access to all videos'),
+                _buildFeatureItem('Cancel anytime and anywhere'),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close the pop-up
+                    // Navigate to VoucherScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => VoucherScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  ),
+                  child: Text(
+                    'Subscribe',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(height: 10),
-            Text(
-              'Be a premium user and get more features',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 20),
-            _buildFeatureItem('Ad-free'),
-            _buildFeatureItem('Get access to all videos'),
-            _buildFeatureItem('Cancel anytime and anywhere'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the pop-up
-                // Navigate to VoucherScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => VoucherScreen()),
-                );
+          ),
+          Positioned(
+            right: 10,
+            top: 10,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context); // Close the pop-up when X is tapped
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-              ),
-              child: Text(
-                'SUBSCRIBE',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Icon(
+                Icons.close,
+                color: Colors.white,
+                size: 24,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
