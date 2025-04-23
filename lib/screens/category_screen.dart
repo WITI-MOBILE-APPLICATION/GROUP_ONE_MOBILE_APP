@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'movie_detail_screen.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -30,7 +31,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
         return 35;
       case 'Romance':
         return 10749;
-      // Additional TMDB genres for future scalability
       case 'Drama':
         return 18;
       case 'Horror':
@@ -43,6 +43,26 @@ class _CategoryScreenState extends State<CategoryScreen> {
         return 12;
       case 'Animation':
         return 16;
+      case 'Fantasy':
+        return 14;
+      case 'Crime':
+        return 80;
+      case 'Mystery':
+        return 9648;
+      case 'Family':
+        return 10751;
+      case 'Documentary':
+        return 99;
+      case 'History':
+        return 36;
+      case 'Music':
+        return 10402;
+      case 'War':
+        return 10752;
+      case 'Western':
+        return 37;
+      case 'TV Movie':
+        return 10770;
       default:
         return -1; // Indicate unsupported category
     }
@@ -89,7 +109,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
   @override
   void initState() {
     super.initState();
+    // Enable full-screen mode by hiding status bar
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     fetchMoviesByCategory();
+  }
+
+  @override
+  void dispose() {
+    // Restore system UI when leaving the screen
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    super.dispose();
   }
 
   void _navigateToMovieDetails(BuildContext context, dynamic movie) {
@@ -108,14 +137,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-         
           widget.category,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            
-            
           ),
         ),
         leading: IconButton(
