@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'movie_detail_screen.dart';
 import 'search_screen.dart';
 import 'voucher_screen.dart'; // Import the new VoucherScreen
-
+import 'profile_screen.dart';
 class HomeScreen extends StatefulWidget {
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -163,19 +163,25 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _onItemTapped(int index) {
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => SearchScreen(apiKey: apiKey)),
-      );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
+ void _onItemTapped(int index) {
+  if (index == 1) {
+    // Navigate to SearchScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SearchScreen(apiKey: apiKey)),
+    );
+  } else if (index == 4) {
+    // Navigate to ProfileScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfileScreen()),
+    );
+  } else {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(

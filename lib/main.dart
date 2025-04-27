@@ -65,7 +65,7 @@ import 'screens/signup_screen.dart';
 import 'providers/movie_provider.dart';
 import 'screens/forgot_password.dart';
 import 'screens/onboarding1.dart';
-import 'screens/download_screen.dart';
+import 'screens/downloads_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,7 +107,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => LoginScreen(),
           '/home': (context) => HomeScreen(),
           '/forgot': (context) => ForgotPasswordScreen(),
-          '/downloads': (context) => DownloadsScreen()
+          '/downloads': (context) => DownloadsPage()
         },
       ),
     );
