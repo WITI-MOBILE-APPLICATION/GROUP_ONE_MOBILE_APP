@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:video_player/video_player.dart';
-import 'home_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   final String apiKey;

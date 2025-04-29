@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'search_screen.dart';
-import 'episode_screen.dart';
 
 class MoviePlayerScreen extends StatefulWidget {
   final String movieTitle;

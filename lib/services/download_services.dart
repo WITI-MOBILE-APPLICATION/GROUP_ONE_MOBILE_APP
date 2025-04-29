@@ -22,9 +22,6 @@ class DownloadServices {
         );
         final blob = html.Blob([response.data]);
         final downloadUrl = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: downloadUrl)
-          ..setAttribute('download', '$title.jpg')
-          ..click();
         html.Url.revokeObjectUrl(downloadUrl);
         print('Download initiated for $title on web');
 

@@ -1,50 +1,31 @@
-// import 'package:flutter/material.dart';
-// import '../models/notifications.dart';
-// import '../services/notification_services.dart';
-// import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import '../services/notification_services.dart';
 
-// class NotificationScreen extends StatefulWidget {
-//   const NotificationScreen({super.key});
+class NotificationProvider with ChangeNotifier {
+  List<NotificationService> _notifications = [];
 
-//   @override
-//   _NotificationScreenState createState() => _NotificationScreenState();
-// }
+  List<NotificationService> get notifications => _notifications;
 
-// class _NotificationScreenState extends State<NotificationScreen> {
-//   List<Notification> notifications = [];
+  NotificationProvider() {
+    // Initialize OneSignal
+    NotificationService.initialize();
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     // Listen for push notifications
-//     OneSignal.Notifications.addForegroundWillDisplayListener((event) {
-//       final notification = Notification(
-//         id: event.notification.notificationId,
-//         title: event.notification.title ?? 'No Title',
-//         message: event.notification.body ?? 'No Message',
-//         timestamp: DateTime.now(),
-//       );
-//       setState(() {
-//         notifications.add(notification);
-//       });
-//     });
-//   }
+    // Listen for push notifications
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      final notification = notifications;
+      _notifications.add(notification as NotificationService);
+      notifyListeners();
+    });
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: const Text('Notifications')),
-//       body: ListView.builder(
-//         itemCount: notifications.length,
-//         itemBuilder: (context, index) {
-//           final notification = notifications[index];
-//           return ListTile(
-//             title: Text(notification.title),
-//             subtitle: Text(notification.message),
-//             trailing: Text(notification.timestamp.toString()),
-//           );
-//         },
-//       ),
-//     );
-//   }
-// }
+  void addNotification(NotificationService notification) {
+    _notifications.add(notification);
+    notifyListeners();
+  }
+
+  void clearNotifications() {
+    _notifications.clear();
+    notifyListeners();
+  }
+}
