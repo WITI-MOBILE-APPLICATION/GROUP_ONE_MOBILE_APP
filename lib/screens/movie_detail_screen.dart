@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:provider/provider.dart';
 import '../services/download_services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'movie_player_screen.dart'; // Import MoviePlayerScreen for playback
 
 class MovieDetailScreen extends StatefulWidget {
   final dynamic movie;
@@ -26,12 +27,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
   Map<String, dynamic>? movieDetails;
   List<dynamic> similarMovies = [];
   bool isDownloading = false;
+  String? trailerKey; // Store the YouTube video key for the trailer
+  
+  bool isSeries = false;
+  List<dynamic> seasons = [];
+  Map<int, List<dynamic>> episodesBySeason = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    fetchMovieDetails();
+    isSeries = widget.movie['media_type'] == 'tv' || widget.movie.containsKey('first_air_date');
+    if (isSeries) {
+      fetchTVDetails();
+      fetchSeasons();
+    } else {
+      fetchMovieDetails();
+    }
     fetchSimilarMovies();
   }
 
@@ -47,8 +59,16 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Extract the YouTube trailer key
+        final videos = data['videos']['results'] as List<dynamic>?;
+        final trailer = videos?.firstWhere(
+          (video) => video['type'] == 'Trailer' && video['site'] == 'YouTube',
+          orElse: () => null,
+        );
         setState(() {
-          movieDetails = json.decode(response.body);
+          movieDetails = data;
+          trailerKey = trailer != null ? trailer['key'] : null;
         });
       } else {
         throw Exception('Failed to load movie details');
@@ -60,9 +80,75 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
     }
   }
 
+  Future<void> fetchTVDetails() async {
+    final url = 'https://api.themoviedb.org/3/tv/${widget.movie['id']}?api_key=$apiKey&append_to_response=credits,videos';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Extract the YouTube trailer key
+        final videos = data['videos']['results'] as List<dynamic>?;
+        final trailer = videos?.firstWhere(
+          (video) => video['type'] == 'Trailer' && video['site'] == 'YouTube',
+          orElse: () => null,
+        );
+        setState(() {
+          movieDetails = data;
+          trailerKey = trailer != null ? trailer['key'] : null;
+        });
+      } else {
+        throw Exception('Failed to load TV details');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading TV details: $e')),
+      );
+    }
+  }
+
+  Future<void> fetchSeasons() async {
+    final url = 'https://api.themoviedb.org/3/tv/${widget.movie['id']}?api_key=$apiKey';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          seasons = data['seasons'];
+        });
+        for (var season in seasons) {
+          await fetchEpisodes(season['season_number']);
+        }
+      } else {
+        throw Exception('Failed to load seasons');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading seasons: $e')),
+      );
+    }
+  }
+
+  Future<void> fetchEpisodes(int seasonNumber) async {
+    final url = 'https://api.themoviedb.org/3/tv/${widget.movie['id']}/season/$seasonNumber?api_key=$apiKey';
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        setState(() {
+          episodesBySeason[seasonNumber] = json.decode(response.body)['episodes'];
+        });
+      } else {
+        throw Exception('Failed to load episodes for season $seasonNumber');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading episodes: $e')),
+      );
+    }
+  }
+
   Future<void> fetchSimilarMovies() async {
     final url =
-        'https://api.themoviedb.org/3/movie/${widget.movie['id']}/similar?api_key=$apiKey';
+        'https://api.themoviedb.org/3/${isSeries ? 'tv' : 'movie'}/${widget.movie['id']}/similar?api_key=$apiKey';
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -88,10 +174,15 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
   }
 
   String _getRuntime() {
-    if (movieDetails == null || movieDetails?['runtime'] == null) {
+    if (movieDetails == null) {
       return 'N/A';
     }
-    int runtime = movieDetails!['runtime'];
+    if (isSeries) {
+      return movieDetails!['episode_run_time'] != null && movieDetails!['episode_run_time'].isNotEmpty
+          ? '${movieDetails!['episode_run_time'][0]}m'
+          : 'N/A';
+    }
+    int runtime = movieDetails!['runtime'] ?? 0;
     int hours = runtime ~/ 60;
     int minutes = runtime % 60;
     return '${hours}h ${minutes}m';
@@ -106,7 +197,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
       String thumbnailUrl = '$imageBaseUrl${widget.movie['poster_path']}';
       await downloadServices.downloadMovie(
         widget.movie['id'].toString(),
-        widget.movie['title'],
+        widget.movie['title'] ?? widget.movie['name'],
         thumbnailUrl,
         thumbnailUrl,
       );
@@ -114,8 +205,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
         SnackBar(
           content: Text(
             kIsWeb
-                ? '${widget.movie['title']} thumbnail downloaded to your browser'
-                : '${widget.movie['title']} thumbnail downloaded',
+                ? '${widget.movie['title'] ?? widget.movie['name']} thumbnail downloaded to your browser'
+                : '${widget.movie['title'] ?? widget.movie['name']} thumbnail downloaded',
           ),
         ),
       );
@@ -147,7 +238,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Movie backdrop with gradient overlay
             Stack(
               children: [
                 Container(
@@ -180,15 +270,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                 ),
               ],
             ),
-
-            // Movie details
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.movie['title'] ?? 'Unknown',
+                    widget.movie['title'] ?? widget.movie['name'] ?? 'Unknown',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -198,7 +286,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                   const SizedBox(height: 8),
                   Text(
                     movieDetails != null
-                        ? '${movieDetails!['release_date']?.substring(0, 4) ?? "N/A"} • ${_getGenres()} • ${_getRuntime()}'
+                        ? '${(isSeries ? movieDetails!['first_air_date'] : movieDetails!['release_date'])?.substring(0, 4) ?? "N/A"} • ${_getGenres()} • ${_getRuntime()}'
                         : 'N/A',
                     style: const TextStyle(color: Colors.grey),
                   ),
@@ -218,9 +306,22 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                             ),
                           ),
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Play functionality not implemented')),
-                            );
+                            if (trailerKey != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => MoviePlayerScreen(
+                                    movieTitle: widget.movie['title'] ?? widget.movie['name'] ?? 'Content',
+                                    videoUrl: trailerKey!, // Pass the YouTube video key
+                                    isYouTube: true, // Indicate this is a YouTube video
+                                  ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No trailer available')),
+                              );
+                            }
                           },
                         ),
                       ),
@@ -255,8 +356,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                 ],
               ),
             ),
-
-            // Tab Bar
             Container(
               decoration: BoxDecoration(
                 border: Border(
@@ -274,8 +373,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                 ],
               ),
             ),
-
-            // Tab Bar View
             SizedBox(
               height: 400,
               child: TabBarView(
@@ -293,94 +390,183 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
   }
 
   Widget _buildTrailerContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'TRAILER',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+    if (isSeries) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'SEASONS & EPISODES',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    '$imageBaseUrl${widget.movie['backdrop_path']}',
-                    width: double.infinity,
-                    height: 180,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: double.infinity,
-                        height: 180,
-                        color: Colors.grey[800],
-                        child: const Icon(Icons.broken_image, color: Colors.white),
+            const SizedBox(height: 12),
+            seasons.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: seasons.length,
+                    itemBuilder: (context, seasonIndex) {
+                      final season = seasons[seasonIndex];
+                      final episodes = episodesBySeason[season['season_number']] ?? [];
+                      return ExpansionTile(
+                        title: Text(
+                          'Season ${season['season_number']}',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                        children: episodes.isEmpty
+                            ? [const Center(child: CircularProgressIndicator())]
+                            : episodes.map((episode) {
+                                return ListTile(
+                                  title: Text(
+                                    episode['name'] ?? 'Episode ${episode['episode_number']}',
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                  subtitle: Text(
+                                    episode['overview'] ?? 'No description',
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                                  onTap: () {
+                                    if (trailerKey != null) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => MoviePlayerScreen(
+                                            movieTitle: episode['name'] ?? 'Episode',
+                                            videoUrl: trailerKey!, // Use the TV show trailer
+                                            isYouTube: true,
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('No trailer available for this episode')),
+                                      );
+                                    }
+                                  },
+                                );
+                              }).toList(),
                       );
                     },
                   ),
-                ),
-                Container(
-                  width: double.infinity,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.black.withOpacity(0.3),
-                  ),
-                ),
-                const Icon(
-                  Icons.play_circle_outline,
-                  color: Colors.white,
-                  size: 50,
-                ),
-                Positioned(
-                  bottom: 10,
-                  right: 10,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.black54,
-                    radius: 15,
-                    child: IconButton(
-                      icon: const Icon(Icons.download, color: Colors.white, size: 18),
-                      onPressed: _downloadThumbnail,
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'TRAILER',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () {
+                if (trailerKey != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MoviePlayerScreen(
+                        movieTitle: widget.movie['title'] ?? widget.movie['name'] ?? 'Content',
+                        videoUrl: trailerKey!,
+                        isYouTube: true,
+                      ),
                     ),
-                  ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('No trailer available')),
+                  );
+                }
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        '$imageBaseUrl${widget.movie['backdrop_path']}',
+                        width: double.infinity,
+                        height: 180,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: double.infinity,
+                            height: 180,
+                            color: Colors.grey[800],
+                            child: const Icon(Icons.broken_image, color: Colors.white),
+                          );
+                        },
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.play_circle_outline,
+                      color: Colors.white,
+                      size: 50,
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      right: 10,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.black54,
+                        radius: 15,
+                        child: IconButton(
+                          icon: const Icon(Icons.download, color: Colors.white, size: 18),
+                          onPressed: _downloadThumbnail,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${widget.movie['title']} - Official Trailer',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            const SizedBox(height: 12),
+            Text(
+              '${widget.movie['title'] ?? widget.movie['name']} - Official Trailer',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.movie['overview'] != null
-                ? widget.movie['overview'].length > 100
-                    ? '${widget.movie['overview'].substring(0, 100)}...'
-                    : widget.movie['overview']
-                : 'No description available',
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
+            const SizedBox(height: 4),
+            Text(
+              widget.movie['overview'] != null
+                  ? widget.movie['overview'].length > 100
+                      ? '${widget.movie['overview'].substring(0, 100)}...'
+                      : widget.movie['overview']
+                  : 'No description available',
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildSimilarContent() {
@@ -418,7 +604,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            movie['title'] ?? 'Unknown',
+                            movie['title'] ?? movie['name'] ?? 'Unknown',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
