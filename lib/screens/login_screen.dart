@@ -1,78 +1,166 @@
-// import 'dart:async';
+// @dart=2.17
 // import 'package:flutter/material.dart';
-// import 'package:my_app/screens/home_screen.dart';
-// import 'package:my_app/screens/signup_screen.dart';
+// import 'dart:convert';
+// import '../services/auth_service.dart';
+
+// import 'home_screen.dart';
 
 // class LoginScreen extends StatefulWidget {
+//   const LoginScreen({super.key});
+
 //   @override
 //   _LoginScreenState createState() => _LoginScreenState();
 // }
 
 // class _LoginScreenState extends State<LoginScreen> {
+//   final emailController = TextEditingController();
+//   final passwordController = TextEditingController();
+
+//   String error = '';
+//   bool isLoading = false;
+//   final AuthService _authService = AuthService();
+
 //   @override
 //   void initState() {
 //     super.initState();
-//     // Adding delay to simulate splash or initial loading screen
-//     Timer(Duration(seconds: 3), () {
+//     // Check if user is already logged in
+//     _checkExistingUser();
+//   }
+
+//   Future<void> _checkExistingUser() async {
+//     final user = await _authService.getCurrentUser();
+//     if (user != null && mounted) {
 //       Navigator.pushReplacement(
 //         context,
-//         MaterialPageRoute(builder: (context) => SignUpScreen()),
+//         MaterialPageRoute(builder: (context) => const HomeScreen()),
 //       );
+//     }
+//   }
+
+//   Future<void> loginUser() async {
+//     setState(() {
+//       isLoading = true;
+//       error = '';
 //     });
+
+//     try {
+//       // Validate inputs
+//       if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+//         setState(() {
+//           error = 'Email and password are required';
+//         });
+//         return;
+//       }
+
+//       // Sign in user
+//       final user = await _authService.signIn(
+//         emailController.text,
+//         passwordController.text,
+//       );
+
+//       if (user == null) {
+//         setState(() {
+//           error = 'Invalid email or password';
+//         });
+//         return;
+//       }
+
+//       if (!mounted) return;
+
+//       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+//         content: Text(
+//           'Login successful',
+//           style: TextStyle(color: Colors.white),
+//         ),
+//         backgroundColor: Colors.green,
+//         behavior: SnackBarBehavior.floating,
+//       ));
+
+//       // Navigate to home screen
+//       Navigator.pushReplacement(
+//         context,
+//         MaterialPageRoute(builder: (context) => const HomeScreen()),
+//       );
+//     } catch (e) {
+//       setState(() {
+//         error = 'Something went wrong. Please try again.';
+//       });
+//     } finally {
+//       setState(() {
+//         isLoading = false;
+//       });
+//     }
 //   }
 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: Colors.black87,
+//       backgroundColor: const Color(0xFF06041F),
 //       body: Padding(
 //         padding: const EdgeInsets.all(20),
 //         child: Column(
 //           mainAxisAlignment: MainAxisAlignment.center,
 //           children: [
 //             const Text('Login',
-//                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+//                 style: TextStyle(
+//                     fontSize: 28,
+//                     fontWeight: FontWeight.bold,
+//                     color: Colors.white)),
 //             const SizedBox(height: 40),
-//             const TextField(
-//               decoration: InputDecoration(
-//                   labelText: 'Email Address', border: UnderlineInputBorder()),
+//             TextField(
+//               controller: emailController,
+//               decoration: const InputDecoration(
+//                 labelText: 'Email Address',
+//                 border: UnderlineInputBorder(),
+//                 labelStyle: TextStyle(color: Colors.white),
+//               ),
+//               style: const TextStyle(color: Colors.white),
 //             ),
-//             SizedBox(height: 20),
-//             const TextField(
+//             const SizedBox(height: 20),
+//             TextField(
+//               controller: passwordController,
 //               obscureText: true,
-//               decoration: InputDecoration(
+//               decoration: const InputDecoration(
 //                 labelText: 'Password',
 //                 border: UnderlineInputBorder(),
+//                 labelStyle: TextStyle(color: Colors.white),
 //               ),
+//               style: const TextStyle(color: Colors.white),
 //             ),
 //             Align(
 //               alignment: Alignment.centerRight,
 //               child: TextButton(
 //                 onPressed: () {
-//                   Navigator.pushNamed(context, '/forgot');
+//                   // Forgot password functionality
 //                 },
-//                 child: Text("Forgot Password?"),
+//                 child: const Text("Forgot Password?",
+//                     style: TextStyle(color: Colors.white)),
 //               ),
 //             ),
-//             SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: () {},
-//               style: ElevatedButton.styleFrom(
-//                   backgroundColor: Colors.red,
-//                   minimumSize: Size(double.infinity, 50),
-//                   shape: StadiumBorder()),
-//               child: Text('Login'),
-//             ),
-//             SizedBox(height: 20),
+//             const SizedBox(height: 20),
+//             if (error.isNotEmpty)
+//               Text(error, style: const TextStyle(color: Colors.red)),
+//             isLoading
+//                 ? const CircularProgressIndicator()
+//                 : ElevatedButton(
+//                     onPressed: loginUser,
+//                     style: ElevatedButton.styleFrom(
+//                       backgroundColor: Colors.red,
+//                       minimumSize: const Size(double.infinity, 50),
+//                       shape: const StadiumBorder(),
+//                     ),
+//                     child: const Text('Login'),
+//                   ),
+//             const SizedBox(height: 20),
 //             const Row(children: <Widget>[
 //               Expanded(child: Divider(color: Colors.grey)),
 //               Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-//                 child: Text("or"),
+//                 padding: EdgeInsets.symmetric(horizontal: 8.0),
+//                 child: Text("or", style: TextStyle(color: Colors.white)),
 //               ),
 //               Expanded(child: Divider(color: Colors.grey)),
 //             ]),
-//             SizedBox(height: 20),
+//             const SizedBox(height: 20),
 //             const Row(
 //               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //               children: [
@@ -80,18 +168,21 @@
 //                 SocialButton(label: 'Facebook', icon: Icons.facebook),
 //               ],
 //             ),
-//             SizedBox(height: 30),
+//             const SizedBox(height: 30),
 //             TextButton(
 //               onPressed: () {
 //                 Navigator.pushNamed(context, '/signup');
 //               },
-//               child: const Text.rich(TextSpan(
-//                   text: "Do you already have an account? ",
-//                   children: [
-//                     TextSpan(
-//                         text: "Sign up now",
-//                         style: TextStyle(fontWeight: FontWeight.bold))
-//                   ])),
+//               child: const Text.rich(
+//                   TextSpan(
+//                     text: "Don't have an account? ",
+//                     children: [
+//                       TextSpan(
+//                           text: "Sign up now",
+//                           style: TextStyle(fontWeight: FontWeight.bold)),
+//                     ],
+//                   ),
+//                   style: TextStyle(color: Colors.white)),
 //             )
 //           ],
 //         ),
@@ -104,8 +195,7 @@
 //   final String label;
 //   final IconData icon;
 
-//   const SocialButton({required this.label, required this.icon, Key? key})
-//       : super(key: key);
+//   const SocialButton({required this.label, required this.icon, super.key});
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -113,32 +203,109 @@
 //       onPressed: () {},
 //       style: ElevatedButton.styleFrom(
 //         backgroundColor: Colors.grey[800],
-//         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-//         shape: StadiumBorder(),
+//         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+//         shape: const StadiumBorder(),
 //       ),
 //       icon: Icon(icon, color: Colors.white),
-//       label: Text(label, style: TextStyle(color: Colors.white)),
+//       label: Text(label, style: const TextStyle(color: Colors.white)),
 //     );
 //   }
 // }
 
 import 'package:flutter/material.dart';
-// ignore: depend_on_referenced_packages
+import 'dart:convert';
+import '../services/auth_service.dart';
+import 'app_localizations.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+
+  String error = '';
+  bool isLoading = false;
+  final AuthService _authService = AuthService();
+
   @override
   void initState() {
     super.initState();
-    // The initState now only sets up the initial state without delay
+    _checkExistingUser();
+  }
+
+  Future<void> _checkExistingUser() async {
+    final user = await _authService.getCurrentUser();
+    if (user != null && mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
+  }
+
+  Future<void> loginUser() async {
+    setState(() {
+      isLoading = true;
+      error = '';
+    });
+
+    try {
+      if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+        setState(() {
+          error = AppLocalizations.of(context)!
+                  .translate('email_password_required') ??
+              'Email and Password Are Required';
+        });
+        return;
+      }
+
+      final user = await _authService.signIn(
+        emailController.text,
+        passwordController.text,
+      );
+
+      if (user == null) {
+        setState(() {
+          error = AppLocalizations.of(context)!
+                  .translate('invalid_email_password') ??
+              'Invalid Email or Password';
+        });
+        return;
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          AppLocalizations.of(context)!.translate('login_successful') ??
+              'Login Successful',
+          style: const TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ));
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } catch (e) {
+      setState(() {
+        error =
+            AppLocalizations.of(context)!.translate('something_went_wrong') ??
+                'Something Went Wrong Please Try Again';
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -150,60 +317,94 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Login',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            Text(
+              AppLocalizations.of(context)!.translate('login') ?? 'Login',
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
             const SizedBox(height: 40),
-            const TextField(
+            TextField(
+              controller: emailController,
               decoration: InputDecoration(
-                  labelText: 'Email Address', border: UnderlineInputBorder()),
+                labelText:
+                    AppLocalizations.of(context)!.translate('email') ?? 'Email',
+                border: const UnderlineInputBorder(),
+                labelStyle: const TextStyle(color: Colors.white),
+              ),
+              style: const TextStyle(color: Colors.white),
             ),
             const SizedBox(height: 20),
-            const TextField(
+            TextField(
+              controller: passwordController,
               obscureText: true,
               decoration: InputDecoration(
-                labelText: 'Password',
-                border: UnderlineInputBorder(),
+                labelText:
+                    AppLocalizations.of(context)!.translate('password') ??
+                        'Password',
+                border: const UnderlineInputBorder(),
+                labelStyle: const TextStyle(color: Colors.white),
               ),
+              style: const TextStyle(color: Colors.white),
             ),
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/forgot');
-                },
-                child: const Text("Forgot Password?"),
+                onPressed: () {},
+                child: Text(
+                  AppLocalizations.of(context)!.translate('forgot_password') ??
+                      'Forgot Password',
+                  style: const TextStyle(color: Colors.white),
+                ),
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // On login, navigate to the next screen (e.g., home or dashboard)
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: const StadiumBorder()),
-              child: const Text('Login'),
+            if (error.isNotEmpty)
+              Text(error, style: const TextStyle(color: Colors.red)),
+            isLoading
+                ? const CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: loginUser,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: const StadiumBorder(),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.translate('login') ??
+                          'Login',
+                    ),
+                  ),
+            const SizedBox(height: 20),
+            Row(
+              children: <Widget>[
+                const Expanded(child: Divider(color: Colors.grey)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    AppLocalizations.of(context)!.translate('or') ?? 'Or',
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ),
+                const Expanded(child: Divider(color: Colors.grey)),
+              ],
             ),
             const SizedBox(height: 20),
-            const Row(children: <Widget>[
-              Expanded(child: Divider(color: Colors.grey)),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text("or"),
-              ),
-              Expanded(child: Divider(color: Colors.grey)),
-            ]),
-            const SizedBox(height: 20),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                SocialButton(label: 'Google', icon: Icons.g_mobiledata),
-                SocialButton(label: 'Facebook', icon: Icons.facebook),
+                SocialButton(
+                  label: AppLocalizations.of(context)!.translate('google') ??
+                      'Google',
+                  icon: Icons.g_mobiledata,
+                ),
+                SocialButton(
+                  label: AppLocalizations.of(context)!.translate('facebook') ??
+                      'Facebook',
+                  icon: Icons.facebook,
+                ),
               ],
             ),
             const SizedBox(height: 30),
@@ -211,14 +412,27 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.pushNamed(context, '/signup');
               },
-              child: const Text.rich(TextSpan(
-                  text: "Do you already have an account? ",
+              child: Text.rich(
+                TextSpan(
+                  text: AppLocalizations.of(context)!
+                          .translate('dont_have_account') ??
+                      "Don't Have an Account?",
                   children: [
+                    WidgetSpan(
+                      child: SizedBox(
+                          width: 8), // 👈 adds horizontal space (8 pixels)
+                    ),
                     TextSpan(
-                        text: "Sign up now",
-                        style: TextStyle(fontWeight: FontWeight.bold))
-                  ])),
-            )
+                      text:
+                          AppLocalizations.of(context)!.translate('sign_up') ??
+                              'Sign Up',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
           ],
         ),
       ),
